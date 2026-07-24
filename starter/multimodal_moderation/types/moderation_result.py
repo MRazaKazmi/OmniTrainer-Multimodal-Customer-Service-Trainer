@@ -1,5 +1,4 @@
-from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 
 class ModerationResult(BaseModel):
@@ -9,34 +8,72 @@ class ModerationResult(BaseModel):
 
 class TextModerationResult(ModerationResult):
 
-    contains_pii: bool = Field(description="Whether the message contains any personally-identifiable information (PII)")
-    is_unfriendly: bool = Field(description="Whether unfriendly tone or content was detected")
-    is_unprofessional: bool = Field(description="Whether unprofessional tone or content was detected")
+    contains_pii: bool = Field(
+        default=False,
+        description="Whether the message contains any personally-identifiable information (PII)",
+    )
+    is_unfriendly: bool = Field(
+        default=False,
+        description="Whether unfriendly tone or content was detected",
+    )
+    is_unprofessional: bool = Field(
+        default=False,
+        description="Whether unprofessional tone or content was detected",
+    )
+
+    @computed_field
+    @property
+    def is_flagged(self) -> bool:
+        return self.contains_pii or self.is_unfriendly or self.is_unprofessional
 
 
 class ImageModerationResult(ModerationResult):
 
     contains_pii: bool = Field(
-        description="Whether the image contains any person, part of a person, or personally-identifiable information (PII)"
+        default=False,
+        description="Whether the image contains any person, part of a person, or personally-identifiable information (PII)",
     )
-    is_disturbing: bool = Field(description="Whether the image is disturbing")
-    is_low_quality: bool = Field(description="Whether the image is low quality")
+    is_disturbing: bool = Field(default=False, description="Whether the image is disturbing")
+    is_low_quality: bool = Field(default=False, description="Whether the image is low quality")
+
+    @computed_field
+    @property
+    def is_flagged(self) -> bool:
+        return self.contains_pii or self.is_disturbing or self.is_low_quality
 
 
 class VideoModerationResult(ModerationResult):
 
     contains_pii: bool = Field(
-        description="Whether the video contains any person or personally-identifiable information (PII)"
+        default=False,
+        description="Whether the video contains any person or personally-identifiable information (PII)",
     )
-    is_disturbing: bool = Field(description="Whether the video is disturbing")
-    is_low_quality: bool = Field(description="Whether the video is low quality")
+    is_disturbing: bool = Field(default=False, description="Whether the video is disturbing")
+    is_low_quality: bool = Field(default=False, description="Whether the video is low quality")
+
+    @computed_field
+    @property
+    def is_flagged(self) -> bool:
+        return self.contains_pii or self.is_disturbing or self.is_low_quality
 
 
 class AudioModerationResult(ModerationResult):
 
     transcription: str = Field(description="Transcription of the audio")
     contains_pii: bool = Field(
-        description="Whether the audio contains any personally-identifiable information (PII) such as names, addresses, phone numbers"
+        default=False,
+        description="Whether the audio contains any personally-identifiable information (PII) such as names, addresses, phone numbers",
     )
-    is_unfriendly: bool = Field(description="Whether unfriendly tone or content was detected")
-    is_unprofessional: bool = Field(description="Whether unprofessional tone or content was detected")
+    is_unfriendly: bool = Field(
+        default=False,
+        description="Whether unfriendly tone or content was detected",
+    )
+    is_unprofessional: bool = Field(
+        default=False,
+        description="Whether unprofessional tone or content was detected",
+    )
+
+    @computed_field
+    @property
+    def is_flagged(self) -> bool:
+        return self.contains_pii or self.is_unfriendly or self.is_unprofessional

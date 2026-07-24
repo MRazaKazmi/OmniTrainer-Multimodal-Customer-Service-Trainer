@@ -75,10 +75,20 @@ class TestTextModerationResult:
         assert issubclass(TextModerationResult, ModerationResult), \
             "TextModerationResult should inherit from ModerationResult"
 
-    def test_all_fields_are_required(self):
-        """Verify all fields are required"""
-        with pytest.raises(ValidationError, match="contains_pii|is_unfriendly|is_unprofessional"):
-            TextModerationResult(rationale="Test")
+    def test_flag_fields_default_to_false(self):
+        """Verify boolean flag fields default to False"""
+        result = TextModerationResult(rationale="Test")
+        assert result.contains_pii is False
+        assert result.is_unfriendly is False
+        assert result.is_unprofessional is False
+
+    def test_is_flagged(self):
+        """Verify is_flagged reflects any True moderation flag"""
+        clean = TextModerationResult(rationale="Test")
+        assert clean.is_flagged is False
+
+        flagged = TextModerationResult(rationale="Test", contains_pii=True)
+        assert flagged.is_flagged is True
 
 
 class TestImageModerationResult:
@@ -117,10 +127,20 @@ class TestImageModerationResult:
         assert issubclass(ImageModerationResult, ModerationResult), \
             "ImageModerationResult should inherit from ModerationResult"
 
-    def test_all_fields_are_required(self):
-        """Verify all fields are required"""
-        with pytest.raises(ValidationError, match="contains_pii|is_disturbing|is_low_quality"):
-            ImageModerationResult(rationale="Test")
+    def test_flag_fields_default_to_false(self):
+        """Verify boolean flag fields default to False"""
+        result = ImageModerationResult(rationale="Test")
+        assert result.contains_pii is False
+        assert result.is_disturbing is False
+        assert result.is_low_quality is False
+
+    def test_is_flagged(self):
+        """Verify is_flagged reflects any True moderation flag"""
+        clean = ImageModerationResult(rationale="Test")
+        assert clean.is_flagged is False
+
+        flagged = ImageModerationResult(rationale="Test", is_disturbing=True)
+        assert flagged.is_flagged is True
 
 
 class TestVideoModerationResult:
@@ -159,10 +179,20 @@ class TestVideoModerationResult:
         assert issubclass(VideoModerationResult, ModerationResult), \
             "VideoModerationResult should inherit from ModerationResult"
 
-    def test_all_fields_are_required(self):
-        """Verify all fields are required"""
-        with pytest.raises(ValidationError, match="contains_pii|is_disturbing|is_low_quality"):
-            VideoModerationResult(rationale="Test")
+    def test_flag_fields_default_to_false(self):
+        """Verify boolean flag fields default to False"""
+        result = VideoModerationResult(rationale="Test")
+        assert result.contains_pii is False
+        assert result.is_disturbing is False
+        assert result.is_low_quality is False
+
+    def test_is_flagged(self):
+        """Verify is_flagged reflects any True moderation flag"""
+        clean = VideoModerationResult(rationale="Test")
+        assert clean.is_flagged is False
+
+        flagged = VideoModerationResult(rationale="Test", is_low_quality=True)
+        assert flagged.is_flagged is True
 
 
 class TestAudioModerationResult:
@@ -205,7 +235,26 @@ class TestAudioModerationResult:
         assert issubclass(AudioModerationResult, ModerationResult), \
             "AudioModerationResult should inherit from ModerationResult"
 
-    def test_all_fields_are_required(self):
-        """Verify all fields are required"""
-        with pytest.raises(ValidationError, match="transcription|contains_pii|is_unfriendly|is_unprofessional"):
-            AudioModerationResult(rationale="Test", transcription="Test")
+    def test_transcription_is_required(self):
+        """Verify transcription remains required"""
+        with pytest.raises(ValidationError, match="transcription"):
+            AudioModerationResult(rationale="Test")
+
+    def test_flag_fields_default_to_false(self):
+        """Verify boolean flag fields default to False"""
+        result = AudioModerationResult(rationale="Test", transcription="Test")
+        assert result.contains_pii is False
+        assert result.is_unfriendly is False
+        assert result.is_unprofessional is False
+
+    def test_is_flagged(self):
+        """Verify is_flagged reflects any True moderation flag"""
+        clean = AudioModerationResult(rationale="Test", transcription="Test")
+        assert clean.is_flagged is False
+
+        flagged = AudioModerationResult(
+            rationale="Test",
+            transcription="Test",
+            is_unfriendly=True,
+        )
+        assert flagged.is_flagged is True
